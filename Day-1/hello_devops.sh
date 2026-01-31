@@ -1,11 +1,10 @@
 # Day 1: My First DevOps Script
-echo "-----------------------------------"
+echo "----------------"
 echo "Welcome to the 100 Days of DevOps Challenge!"
-echo "Today is Day 1."
-echo "-----------------------------------"
+echo "----------------"
 
-echo "Checking System Uptime..."
-uptime
+echo "Checking System Date..."
+Date
 
-echo "-----------------------------------"
+echo "----------------"
 echo "Script execution complete!"
