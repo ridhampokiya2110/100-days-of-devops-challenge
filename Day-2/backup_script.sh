@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #define source and backup directories
-source_dir = "./logs"
-backup_dir = "./backup_logs"
-timestamp = $(date +"%Y%m%d_%H%M%S")
-backup_file = "backup_$timestamp.tar.gz"
+source_dir="./logs"
+backup_dir="./backup_logs"
+timestamp=$(date +"%Y%m%d_%H%M%S")
+backup_file="backup_$timestamp.tar.gz"
 
 echo "Creating backup of logs..."
 
