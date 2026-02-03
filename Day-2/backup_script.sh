@@ -14,6 +14,9 @@ if [ ! -d "$backup_dir" ]; then
     mkdir -p "$backup_dir"
 fi 
 
+
+
+    
 #create backup using tar 
 echo "compressing logs from $source_dir"
 tar -czf "$backup_dir/$backup_file" "$source_dir"
