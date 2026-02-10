@@ -1,0 +1,7 @@
+2026-02-10 10:00:01 INFO Server started successfully
+2026-02-10 10:05:23 WARNING High memory usage detected
+2026-02-10 10:10:45 ERROR Database connection failed
+2026-02-10 10:12:00 INFO User admin logged in
+2026-02-10 10:15:30 ERROR Payment gateway timeout
+2026-02-10 10:20:00 INFO Scheduled backup completed
+2026-02-10 10:30:10 CRITICAL System overheating shutting down
