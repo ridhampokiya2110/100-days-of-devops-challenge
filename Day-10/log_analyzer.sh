@@ -11,7 +11,6 @@ if [ ! -f "$log_file" ]; then
     exit 1
 fi
 
-# 1. Print only the Date ($1) and the Message ($4 onwards)
 #awk automatically splits lines by spaces
 echo "---Full Summary---"
 awk '{print $1, $3, $4, $5, $6}' "$log_file"
