@@ -2,7 +2,7 @@
 
 key_name="my_server_key"
 echo "generating SSH keys for: $key_name"
-echo "=================================="
+echo "============================================"
 
 #create a directory to store keys
 mkdir -p keys
@@ -17,3 +17,4 @@ echo "============================================="
 
 echo "Here is your Public Key (To put on Server):"
 cat "keys/$key_name.pub"
+echo "============================================="
