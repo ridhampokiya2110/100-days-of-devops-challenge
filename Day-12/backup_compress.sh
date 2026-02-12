@@ -25,4 +25,4 @@ compressed=$(du -sh "$backup_file" | cut -f1)
 echo "Original Size: $original"
 echo "Compressed Size: $compressed"
 
-echo "======================================"
+echo "================================"
