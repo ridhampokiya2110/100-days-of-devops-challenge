@@ -4,7 +4,7 @@ source_dir="source_code"
 backup_file="backup_data.tar.gz"
 
 echo "Starting Backup Process"
-echo "======================="
+echo "================================"
 
 #check if source folder exists 
 if [ ! -d "$source_dir" ]; then
