@@ -1,4 +1,4 @@
-# 🔒 Day 23: AWS VPC - Private Subnets & NAT Gateways
+# Day 23: AWS VPC - Private Subnets & NAT Gateways
 
 ## 📋 Project Overview
 Today I advanced my AWS networking skills by setting up a **Private Subnet** and a **NAT Gateway**. This architecture is standard industry practice for securing backend servers and databases.
@@ -12,4 +12,3 @@ Today I advanced my AWS networking skills by setting up a **Private Subnet** and
 ## 🛡️ Security Concept (The Vault)
 Servers in the private subnet are completely shielded from direct inbound internet traffic. They can download updates (via the NAT Gateway), but hackers cannot initiate a connection from the outside.
 
-**Note:** The NAT Gateway and Elastic IP were successfully deleted post-lab to optimize cloud costs.
