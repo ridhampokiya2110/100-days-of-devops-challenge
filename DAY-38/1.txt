@@ -1,0 +1,33 @@
+import json
+import urllib.parse
+import boto3
+
+sns_client = boto3.client('sns')
+
+SNS_TOPIC_ARN = 'arn:aws:sns:eu-north-1:034277093678:s3-upload-alerts'
+
+def lambda_handler(event, context):
+    try:
+        bucket_name = event['Records'][0]['s3']['bucket']['name']
+        file_name = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+        
+        # Email ka message banate hain
+        alert_message = f"🚨 AWS CLOUD ALERT: \n\nBoss, ek nayi file '{file_name}' upload hui hai '{bucket_name}' bucket mein! \n\nCheck your AWS Console."
+        print(alert_message)
+        
+        response = sns_client.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Message=alert_message,
+            Subject='🚀 AWS DevOps S3 Alert!'
+        )
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Alert sent successfully!')
+        }
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps('Error processing file')
+        }
