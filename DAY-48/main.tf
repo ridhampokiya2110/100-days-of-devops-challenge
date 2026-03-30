@@ -1,6 +1,7 @@
 provider "aws" {
-  region = "ap-south-1"
+  region = "eu-north-1"
 }
+data "aws_subnets" "available" {}
 
 module "dev_environment" {
   source        = "./modules/ec2"

@@ -9,3 +9,6 @@ variable "instance_type" {
 variable "server_name" {
   description = "Name tag for the server"
 }
+variable "subnet_id" {
+  description = "The Subnet ID to launch the server in"
+}
