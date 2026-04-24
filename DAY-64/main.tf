@@ -1,0 +1,46 @@
+provider "aws" {
+  region = "eu-north-1"
+}
+
+variable "sg_ports" {
+  description = "List of ports to open in the Security Group"
+  type        = list(number)
+  default     = [22, 80, 443, 8080, 9090] 
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+resource "aws_security_group" "dynamic_web_sg" {
+  name        = "day64-dynamic-sg"
+  description = "Security Group built using Terraform Dynamic Blocks"
+  vpc_id      = data.aws_vpc.default.id
+
+  dynamic "ingress" {
+    for_each = var.sg_ports 
+
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Auto-generated port ${ingress.value}"
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Day64-Dynamic-SG"
+  }
+}
+
+output "security_group_id" {
+  value = aws_security_group.dynamic_web_sg.id
+}
