@@ -15,3 +15,4 @@ Manual Docker builds and pushes are inefficient and unscalable for professional 
 3. **Pipeline Configuration:** Authored `.github/workflows/docker-ci.yml` to define the CI jobs.
 4. **Automation Trigger:** Pushed the codebase to the `main` branch.
 5. **Validation:** Navigated to the GitHub Actions tab to monitor the execution logs. Verified that the runner successfully authenticated, built the image from the `./DAY-72` context, and pushed the final artifact (`day72-automated-nginx:latest`) to the remote Docker Hub registry without any manual CLI intervention.
+.
