@@ -1,0 +1,9 @@
+docker login
+
+docker pull nginx:alpine
+
+docker tag nginx:alpine ridham.../day70-my-nginx:v1
+
+docker push ridham.../day70-my-nginx:v1
+
+docker run -p 8083:80 ridham.../day70-my-nginx:v1
