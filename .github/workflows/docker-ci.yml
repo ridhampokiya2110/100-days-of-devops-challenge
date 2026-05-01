@@ -1,14 +1,13 @@
-name: Docker Build and Push CI
+name: Full CI/CD to AWS EC2
 
 on:
   push:
     branches:
-      - main  
+      - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest 
-
+  build-and-push:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -22,6 +21,21 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./DAY-72 
+          context: ./DAY-73
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/day73-cicd-app:latest
+
+  deploy-to-ec2:
+    needs: build-and-push 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/day73-cicd-app:latest
+            sudo docker rm -f my-live-app || true
+            sudo docker run -d --name my-live-app -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/day73-cicd-app:latest
