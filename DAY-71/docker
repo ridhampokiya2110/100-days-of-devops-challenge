@@ -1,0 +1,11 @@
+in unbuntu:-
+
+sudo apt update -y
+
+sudo apt install docker.io -y
+
+sudo systemctl start docker
+
+sudo systemctl enable docker
+
+sudo docker run -d -p 80:80 ridham.../day70-my-nginx:v1
