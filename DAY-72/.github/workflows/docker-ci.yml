@@ -24,4 +24,4 @@ jobs:
         with:
           context: ./DAY-72 
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/day72-automated-nginx:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx:latest
