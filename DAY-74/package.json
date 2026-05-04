@@ -1,0 +1,6 @@
+{
+    "name": "day-74-app",
+    "scripts": {
+        "build": "mkdir build && echo '<h1> Optimized Multi-Stage App!!</h1>' > build/index.html"
+    }
+}
