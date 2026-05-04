@@ -1,0 +1,9 @@
+docker run -d --name uncapped-app nginx
+docker stats uncapped-app
+
+
+docker run -d --name locked-app --memory="256m" --cpus="0.5" nginx
+docker stats locked-app
+
+
+docker rm -f uncapped-app locked-app 
