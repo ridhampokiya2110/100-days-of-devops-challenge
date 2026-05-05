@@ -1,0 +1,17 @@
+#create a volume
+docker volume create day78-data
+
+#run a container and mount the volume
+docker run -d --name app-v1 -v day78-data:/data ubuntu sleep 1000
+
+#write some data to the volume
+docker exec app-v1 sh -c "echo 'confidential production data!' > /app-data/database.txt"
+
+#stop and remove the first container
+docker rm -f app-v1
+
+#run a new container and mount the same volume
+docker run -d --name app-v2 -v day78-data:/app-data ubuntu sleep 1000
+
+#read the data from the new container
+docker exec app-v2 cat /app-data/database.txt
