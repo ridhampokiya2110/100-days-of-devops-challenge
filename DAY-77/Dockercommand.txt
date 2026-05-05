@@ -1,0 +1,7 @@
+docker run -d --name debug-app -p 8580:80 nginx:alpine
+
+docker logs debug-app
+
+docker exec -it debug-app /bin/sh
+
+docker inspect debug-app
