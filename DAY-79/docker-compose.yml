@@ -1,0 +1,23 @@
+# This docker-compose.yml file sets up a WordPress environment with a MySQL database.
+version: '3.8'
+
+services:
+  db:
+  image: mysql:latest
+  volumes:
+    - db_data:/var/lib/mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: rootpassword
+    MYSQL_DATABASE: mydatabase
+  
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: rootpassword
+      WORDPRESS_DB_NAME: wordpress
+volumes:
+  db_data:
