@@ -1,0 +1,16 @@
+
+docker network create my-secure-network
+
+docker run -d --name secret-db --network my-secure-net alpine sleep 1000
+
+docker run -d --name public-web --network my-secure-net -p 8085:80 nginx:alpine
+
+docker run -d --name outsider alipne sleep 1000
+
+docker exec public-weh ping -c 3 secret-db
+
+docker exec public-weh ping -c 3 secret-db
+
+docker rm -f secret-db public-web outsider
+
+docker network rm my-secure-net
