@@ -1,18 +1,19 @@
-# 🤖 Day 83: CI/CD Automation - Pushing to AWS ECR with GitHub Actions
+# ☁️ Day 82: Enterprise Deployment from AWS ECR to EC2
 
 ## 📋 Project Overview
-Manual deployments are prone to human error and slow down development speed. After learning how to manually push container images to AWS ECR in previous days, today I automated the entire process. I engineered a GitHub Actions CI/CD pipeline that automatically builds a Docker image and pushes it to a private AWS ECR repository every time new code is committed to the main branch.
+Following the work of pushing a container image to a private AWS ECR repository, today I focused on the deployment phase. I provisioned an AWS EC2 instance, authenticated it with my private registry, pulled the secured image, and deployed it. This simulates a real-world production deployment workflow where proprietary code is kept strictly confidential.
 
 ## ⚙️ Core Concepts Explored
-* **Continuous Integration (CI):** Automating the build phase of containerized applications.
-* **GitHub Actions Secrets:** Securely storing AWS IAM credentials in GitHub without hardcoding them in the repository.
-* **Workflow File (YAML):** Writing declarative steps to instruct GitHub runner machines on how to authenticate with AWS and execute Docker commands.
-* **AWS ECR Login Action:** Utilizing official AWS GitHub Actions to generate secure, temporary login tokens for the Docker daemon.
+* **Remote Server Configuration:** Installing Docker and AWS CLI on a fresh Linux server.
+* **Server-to-Registry Authentication:** Bridging an EC2 instance with ECR using IAM credentials and security tokens.
+* **Private Image Pulling:** Understanding how to retrieve container images from private URLs instead of the public Docker Hub.
+* **The Full Deployment Lifecycle:** Completing the `Local Build -> ECR Push -> EC2 Pull -> Run` cycle.
 
 ## 🛠️ Execution Steps
-1. **Repository Setup:** Created a new GitHub repository and initialized a basic project with a `Dockerfile`.
-2. **Security Configuration:** Added `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` to the GitHub Repository Secrets.
-3. **Pipeline Creation:** Authored a workflow YAML file inside the `.github/workflows` directory.
-4. **Pipeline Logic:** Configured the workflow to checkout the code, authenticate with AWS using the stored secrets, log the GitHub runner into the AWS ECR registry, build the Docker image, and push it using dynamic environment variables.
-5. **Deployment Execution:** Pushed the code to the `main` branch, triggering the automated pipeline.
-6. **Validation:** Verified the successful pipeline execution in the GitHub Actions dashboard and confirmed the arrival of the new image layer in the AWS Management Console.
+1. **Launch Infrastructure:** Spun up an Ubuntu EC2 instance with Port 80 exposed.
+2. **SSH & Setup:** Logged into the server and ran `sudo apt install docker.io awscli -y`.
+3. **Authenticate:** Configured AWS credentials using `aws configure` and logged Docker into ECR using the `aws ecr get-login-password` command.
+4. **Pull Artifact:** Downloaded the private image from ECR using `docker pull <account-id>.dkr.ecr.<region>.amazonaws.com/day81-private-app:latest`.
+5. **Execute Deployment:** Spun up the container using `docker run -d -p 80:80 <image-url>`.
+6. **Validation:** Verified the deployment by visiting the EC2 Public IPv4 address in a web browser.
+
