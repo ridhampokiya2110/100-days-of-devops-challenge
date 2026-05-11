@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_CREDS = credentials('dockerhub-creds')
+        IMAGE_NAME = "docker_username/day87-app" 
+    }
+
+    stages {
+        stage('Checkout..') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build Image..') {
+            steps {
+                echo "Building Docker Image version: ${env.BUILD_ID}"
+                bat "docker build -t ${IMAGE_NAME}:${env.BUILD_ID} ."
+                bat "docker build -t ${IMAGE_NAME}:latest ."
+            }
+        }
+        
+        stage('Push to Docker Hub..!!') {
+            steps {
+                echo "Logging into Docker Hub securely..."
+                bat "echo ${DOCKER_CREDS_PSW} | docker login -u ${DOCKER_CREDS_USR} --password-stdin"
+                
+                echo "Pushing Image..."
+                bat "docker push ${IMAGE_NAME}:${env.BUILD_ID}"
+                bat "docker push ${IMAGE_NAME}:latest"
+            }
+        }
+    }
+}
