@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tic-tac-toe-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tic-tac-toe
+  template:
+    metadata:
+      labels:
+        app: tic-tac-toe
+    spec:
+      containers:
+      - name: game-container
+        image: DOCKER_USER_PLACEHOLDER/tic-tac-toe-app:TAG_PLACEHOLDER
+        ports:
+        - containerPort: 80
+          # UPDATE: Resource Requests & Limits
+        resources:
+          requests:
+            memory: "64Mi" # Minimum RAM required
+            cpu: "50m"     # 5% of 1 CPU core
+          limits:
+            memory: "128Mi" # Maximum RAM allowed (Prevents server crash!)
+            cpu: "100m"     # 10% of 1 CPU core
