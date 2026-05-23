@@ -30,7 +30,6 @@ pipeline {
         }
     }
 
-    // Post section stages ke BAHAR hota hai, par pipeline ke ANDAR
     post {
         always {
             echo "Day 88: Cleaning up Workspace..."
