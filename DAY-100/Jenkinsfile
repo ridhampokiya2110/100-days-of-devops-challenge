@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+    }
+
+    stages {
+        stage('Checkout 📥') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init 🛠️') {
+            steps {
+                dir('terraform') {
+                    bat "terraform init"
+                }
+            }
+        }
+
+        stage('Terraform Apply 🚀') {
+            steps {
+                dir('terraform') {
+                    bat "terraform apply -auto-approve"
+                }
+            }
+        }
+
+        stage('Deploy App via Docker Hub 🐳☁️') {
+            steps {
+                script {
+                    // Fetch dynamic IP from Terraform
+                    def rawIP = bat(script: "terraform -chdir=terraform output -raw instance_public_ip", returnStdout: true).trim()
+                    def serverIP = rawIP.split('\r?\n').last().trim()
+                    echo "Target Server IP found: ${serverIP}"
+
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'day-89-key', keyFileVariable: 'PEM_PATH'),
+                        usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')
+                    ]) {
+                        
+                        // Windows Strict Permissions Fix
+                        bat """
+                            icacls "%PEM_PATH%" /inheritance:r
+                            icacls "%PEM_PATH%" /grant:r *S-1-5-18:(R)
+                            icacls "%PEM_PATH%" /grant:r *S-1-5-32-544:(R)
+                        """
+                        echo "Waiting 40 seconds for EC2 to fully boot and start SSH daemon..."
+                        sleep(time: 40, unit: 'SECONDS')
+                        
+                        // 1. Create App Directory & Copy Files
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"mkdir -p /home/ubuntu/app\""
+                        bat "scp -r -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no index.html style.css script.js Dockerfile k8s ubuntu@${serverIP}:/home/ubuntu/app/"
+                        
+                        // Wait for EC2 installations (🔥 ADDED ServerAliveInterval=60 TO PREVENT TIMEOUT)
+                        echo "Waiting for EC2 to finish background installations..."
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"cloud-init status --wait\""
+
+                        // 2. Build, Scan & Push Image
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"sudo docker login -u %DOCKER_USER% -p %DOCKER_PASS% && cd /home/ubuntu/app && sudo docker build -t %DOCKER_USER%/tic-tac-toe-app:${env.BUILD_NUMBER} . && echo 'Starting Trivy Scan...' && sudo trivy image --severity HIGH,CRITICAL %DOCKER_USER%/tic-tac-toe-app:${env.BUILD_NUMBER} && sudo docker push %DOCKER_USER%/tic-tac-toe-app:${env.BUILD_NUMBER}\""
+                        
+                        // 3. KUBERNETES ROLLING UPDATE
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"cd /home/ubuntu/app && sed -i 's/DOCKER_USER_PLACEHOLDER/%DOCKER_USER%/g' k8s/deployment.yaml && sed -i 's/TAG_PLACEHOLDER/${env.BUILD_NUMBER}/g' k8s/deployment.yaml && echo 'Waiting 30 seconds for K3s API...' && sleep 30 && sudo k3s kubectl apply -f k8s/ && sudo k3s kubectl rollout status deployment/tic-tac-toe-deployment\""
+                    }
+                }
+            }
+        }
+        stage('Deploy Observability Stack 📊') {
+            steps {
+                script {
+                    def rawIP = bat(script: "terraform -chdir=terraform output -raw instance_public_ip", returnStdout: true).trim()
+                    def serverIP = rawIP.split('\r?\n').last().trim()
+                    
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'day-89-key', keyFileVariable: 'PEM_PATH')
+                    ]) {
+                        
+                        // 🔥 DAY 100 FIX: Windows SSH Permission Fix (Yeh miss ho gaya tha)
+                        echo "Fixing SSH Key Permissions for Windows..."
+                        bat """
+                            icacls "%PEM_PATH%" /inheritance:r
+                            icacls "%PEM_PATH%" /grant:r *S-1-5-18:(R)
+                            icacls "%PEM_PATH%" /grant:r *S-1-5-32-544:(R)
+                        """
+
+                        echo "Deploying Prometheus & Grafana via Helm..."
+                        
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"mkdir -p ~/.kube && sudo k3s kubectl config view --raw > ~/.kube/config && helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update && helm uninstall monitoring -n monitoring 2>/dev/null ; sleep 10 ; helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace --set alertmanager.enabled=false --set prometheus-node-exporter.enabled=false --set prometheusOperator.admissionWebhooks.enabled=false --set prometheusOperator.tls.enabled=false --timeout 600s\""                        // 2. Expose Grafana to Internet (Port 3000) via background nohup process
+                        bat "ssh -i \"%PEM_PATH%\" -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ubuntu@${serverIP} \"nohup sudo k3s kubectl port-forward --address 0.0.0.0 svc/monitoring-grafana 3000:80 -n monitoring > /dev/null 2>&1 &\""
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution completed. 🏁"
+        }
+        success {
+            echo "SUCCESS! \nJob: ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}] \nStatus: App is LIVE on K8s 🐳☸️ \nSecurity: Trivy Scan Passed 🛡️"
+        }
+        failure {
+            echo "FAILED! \nJob: ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}] \nReason: Check Jenkins Logs."
+        }
+    }
+}
